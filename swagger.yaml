@@ -5,6 +5,7 @@ info:
   version: 1.0.0
 servers:
   - url: http://localhost:4000/api/v1
+  - url: https://stripe-cnd2.onrender.com/api/v1
 paths:
   /auth/sign-up:
     post:
