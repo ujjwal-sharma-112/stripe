@@ -31,7 +31,11 @@ async function main() {
   });
 
   // WEBHOOK
-  app.post("/api/v1/user/webhook/stripe", UserController.paymentFullfilment);
+  app.post(
+    "/api/v1/user/webhook/stripe",
+    Express.raw({ type: "application/json" }),
+    UserController.paymentFullfilment,
+  );
 
   // Middlewares
   app.use(Express.json());
