@@ -251,7 +251,7 @@ class UserController {
                     });
                     await models_1.UserModel.updateOne({ _id: metadata === null || metadata === void 0 ? void 0 : metadata.buyerId }, {
                         planId: metadata === null || metadata === void 0 ? void 0 : metadata.plan_id,
-                        $inc: { creditBalance: metadata === null || metadata === void 0 ? void 0 : metadata.credits },
+                        $inc: { creditBalance: Number(metadata === null || metadata === void 0 ? void 0 : metadata.credits) },
                     });
                     break;
                 default:

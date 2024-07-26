@@ -373,7 +373,7 @@ class UserController {
             { _id: metadata?.buyerId },
             {
               planId: metadata?.plan_id!,
-              $inc: { creditBalance: metadata?.credits },
+              $inc: { creditBalance: Number(metadata?.credits) },
             },
           );
 
