@@ -214,8 +214,8 @@ class UserController {
                     buyer_id: userId.toString(),
                 },
                 mode: "payment",
-                success_url: "http://localhost:3000/success",
-                cancel_url: "http://localhost:3000/cancel"
+                success_url: "http://localhost:5173/success",
+                cancel_url: "http://localhost:5173/cancel"
             }).then(async (response) => {
                 await models_1.TransactionModel.create({
                     stripeId: response.id,
