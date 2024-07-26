@@ -197,8 +197,7 @@ class UserController {
             }
             const amount = Number(plan.price) * 100;
             const stripe = new stripe_1.default(process.env.STRIPE_SECRET);
-            await stripe.checkout.sessions
-                .create({
+            const response = await stripe.checkout.sessions.create({
                 line_items: [
                     {
                         price_data: {
@@ -218,30 +217,22 @@ class UserController {
                 mode: "payment",
                 success_url: "http://localhost:5173/success",
                 cancel_url: "http://localhost:5173/cancel",
-            })
-                .then(async (response) => {
-                if (response.status === "complete") {
-                    await models_1.TransactionModel.create({
-                        stripeId: response.id,
-                        amount: response.amount_subtotal,
-                        plan: plan.name,
-                        credits: plan.credits,
-                        buyer: userId,
-                    }).then(async () => {
-                        await models_1.UserModel.updateOne({
-                            _id: userId,
-                        }, {
-                            $inc: { creditBalance: plan.credits },
-                            planId: plan.id,
-                        });
-                        return res.status(200).json({
-                            id: response.id,
-                        });
-                    });
-                }
-            })
-                .catch((err) => {
-                throw err;
+            });
+            await models_1.TransactionModel.create({
+                stripeId: response.id,
+                amount: response.amount_subtotal,
+                plan: plan.name,
+                credits: plan.credits,
+                buyer: userId,
+            });
+            await models_1.UserModel.updateOne({
+                _id: userId,
+            }, {
+                $inc: { creditBalance: plan.credits },
+                planId: plan.id,
+            });
+            return res.status(200).json({
+                id: response.id,
             });
         }
         catch (err) {

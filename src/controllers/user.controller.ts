@@ -302,55 +302,48 @@ class UserController {
 
       const stripe = new Stripe(process.env.STRIPE_SECRET!);
 
-      await stripe.checkout.sessions
-        .create({
-          line_items: [
-            {
-              price_data: {
-                currency: "inr",
-                product_data: {
-                  name: plan.name,
-                },
-                unit_amount: amount,
+      const response = await stripe.checkout.sessions.create({
+        line_items: [
+          {
+            price_data: {
+              currency: "inr",
+              product_data: {
+                name: plan.name,
               },
-              quantity: 1,
+              unit_amount: amount,
             },
-          ],
-          metadata: {
-            plan: plan.name,
-            buyer_id: userId.toString(),
+            quantity: 1,
           },
-          mode: "payment",
-          success_url: "http://localhost:5173/success",
-          cancel_url: "http://localhost:5173/cancel",
-        })
-        .then(async (response) => {
-          if (response.status === "complete") {
-            await TransactionModel.create({
-              stripeId: response.id,
-              amount: response.amount_subtotal,
-              plan: plan.name,
-              credits: plan.credits,
-              buyer: userId,
-            }).then(async () => {
-              await UserModel.updateOne(
-                {
-                  _id: userId,
-                },
-                {
-                  $inc: { creditBalance: plan.credits },
-                  planId: plan.id,
-                },
-              );
-              return res.status(200).json({
-                id: response.id,
-              });
-            });
-          }
-        })
-        .catch((err) => {
-          throw err;
-        });
+        ],
+        metadata: {
+          plan: plan.name,
+          buyer_id: userId.toString(),
+        },
+        mode: "payment",
+        success_url: "http://localhost:5173/success",
+        cancel_url: "http://localhost:5173/cancel",
+      });
+
+      await TransactionModel.create({
+        stripeId: response.id,
+        amount: response.amount_subtotal,
+        plan: plan.name,
+        credits: plan.credits,
+        buyer: userId,
+      });
+
+      await UserModel.updateOne(
+        {
+          _id: userId,
+        },
+        {
+          $inc: { creditBalance: plan.credits },
+          planId: plan.id,
+        },
+      );
+      return res.status(200).json({
+        id: response.id,
+      });
     } catch (err) {
       return next(err);
     }
