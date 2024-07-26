@@ -315,12 +315,12 @@ class UserController {
           buyer_id: userId.toString(),
         },
         mode: "payment",
-        success_url: "http://localhost:3000/success",
-        cancel_url: "http://localhost:3000/cancel"
-      }).then(async (res) => {
+        success_url: "http://localhost:5173/success",
+        cancel_url: "http://localhost:5173/cancel"
+      }).then(async (response) => {
         await TransactionModel.create({
-          stripeId: res.id,
-          amount: res.amount_subtotal,
+          stripeId: response.id,
+          amount: response.amount_subtotal,
           plan: plan.name,
           credits: plan.credits,
           buyer: userId,
@@ -331,14 +331,14 @@ class UserController {
             $inc: {creditBalance: plan.credits},
             planId: plan.id,
           })
+
+          return res.status(200).json({
+            id: response.id
+          })
         })
       }).catch((err) => {
         throw err;
       });
-
-      return res.status(200).json({
-        message: "Payment Successful"
-      })
     } catch (err) {
       return next(err);
     }
