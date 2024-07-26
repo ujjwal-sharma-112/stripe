@@ -31,7 +31,7 @@ async function main() {
   });
 
   // WEBHOOK
-  app.post("/webhook/stripe", UserController.paymentFullfilment);
+  app.post("/api/v1/user/webhook/stripe", UserController.paymentFullfilment);
 
   // Middlewares
   app.use(Express.json());

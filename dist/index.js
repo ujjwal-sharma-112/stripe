@@ -45,7 +45,7 @@ async function main() {
         services.AdminService.create();
         services.StaticService.createDefaultStaticData();
     });
-    app.post("/webhook/stripe", controllers_1.UserController.paymentFullfilment);
+    app.post("/api/v1/user/webhook/stripe", controllers_1.UserController.paymentFullfilment);
     app.use(express_1.default.json());
     app.use(express_1.default.urlencoded({ extended: true }));
     app.get("/health", (__, res) => {
