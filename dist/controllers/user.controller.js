@@ -212,27 +212,48 @@ class UserController {
                 ],
                 metadata: {
                     plan: plan.name,
+                    credits: plan.credits,
                     buyer_id: userId.toString(),
                 },
                 mode: "payment",
                 success_url: "http://localhost:5173/success",
                 cancel_url: "http://localhost:5173/cancel",
             });
-            await models_1.TransactionModel.create({
-                stripeId: response.id,
-                amount: response.amount_subtotal,
-                plan: plan.name,
-                credits: plan.credits,
-                buyer: userId,
-            });
-            await models_1.UserModel.updateOne({
-                _id: userId,
-            }, {
-                $inc: { creditBalance: plan.credits },
-                planId: plan.id,
-            });
             return res.status(200).json({
                 id: response.id,
+            });
+        }
+        catch (err) {
+            return next(err);
+        }
+    }
+    static async paymentFullfilment(req, res, next) {
+        try {
+            const sig = req.headers["stripe-signature"];
+            let event;
+            try {
+                event = stripe_1.default.webhooks.constructEvent(req.body, sig, process.env.WEBHOOK_SECRET);
+            }
+            catch (err) {
+                res.status(400).send(`Webhook Error: ${err.message}`);
+                return;
+            }
+            switch (event.type) {
+                case "checkout.session.completed":
+                    const { id, metadata, amount_total } = event.data.object;
+                    await models_1.TransactionModel.create({
+                        stripeId: id,
+                        amount: amount_total ? amount_total / 100 : 0,
+                        plan: (metadata === null || metadata === void 0 ? void 0 : metadata.plan) || "",
+                        credits: Number(metadata === null || metadata === void 0 ? void 0 : metadata.credits) || 0,
+                        buyerId: (metadata === null || metadata === void 0 ? void 0 : metadata.buyerId) || "",
+                    });
+                    break;
+                default:
+                    console.log(`Unhandled event type ${event.type}`);
+            }
+            res.status(200).json({
+                message: "Payment Successfull",
             });
         }
         catch (err) {

@@ -9,6 +9,7 @@ import { UserValidator } from "../validators";
 import { v2 as cloudinary } from "cloudinary";
 import { KYCData, Role } from "../types/user.type";
 import Stripe from "stripe";
+import { resolve } from "node:path/win32";
 
 interface CloudinaryUploadResult {
   secure_url: string;
@@ -317,6 +318,7 @@ class UserController {
         ],
         metadata: {
           plan: plan.name,
+          credits: plan.credits,
           buyer_id: userId.toString(),
         },
         mode: "payment",
@@ -324,25 +326,57 @@ class UserController {
         cancel_url: "http://localhost:5173/cancel",
       });
 
-      await TransactionModel.create({
-        stripeId: response.id,
-        amount: response.amount_subtotal,
-        plan: plan.name,
-        credits: plan.credits,
-        buyer: userId,
-      });
-
-      await UserModel.updateOne(
-        {
-          _id: userId,
-        },
-        {
-          $inc: { creditBalance: plan.credits },
-          planId: plan.id,
-        },
-      );
       return res.status(200).json({
         id: response.id,
+      });
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  public static async paymentFullfilment(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ) {
+    try {
+      const sig = req.headers["stripe-signature"]!;
+
+      let event: Stripe.Event;
+
+      try {
+        event = Stripe.webhooks.constructEvent(
+          req.body,
+          sig,
+          process.env.WEBHOOK_SECRET!,
+        );
+      } catch (err) {
+        res.status(400).send(`Webhook Error: ${err.message}`);
+        return;
+      }
+
+      // Handle the event
+      switch (event.type) {
+        case "checkout.session.completed":
+          const { id, metadata, amount_total } = event.data.object;
+
+          await TransactionModel.create({
+            stripeId: id,
+            amount: amount_total ? amount_total / 100 : 0,
+            plan: metadata?.plan || "",
+            credits: Number(metadata?.credits) || 0,
+            buyerId: metadata?.buyerId || "",
+          });
+
+          break;
+        // ... handle other event types
+        default:
+          console.log(`Unhandled event type ${event.type}`);
+      }
+
+      // Return a 200 response to acknowledge receipt of the event
+      res.status(200).json({
+        message: "Payment Successfull",
       });
     } catch (err) {
       return next(err);

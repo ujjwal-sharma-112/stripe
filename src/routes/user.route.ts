@@ -50,6 +50,11 @@ userRouter.post(
 );
 
 // Payment
-userRouter.post("/create-checkout-session", VerifyMiddleware.verify, UserController.createCheckoutSession);
+userRouter.post(
+  "/create-checkout-session",
+  VerifyMiddleware.verify,
+  UserController.createCheckoutSession,
+);
+userRouter.post("/webhook/stripe", UserController.paymentFullfilment);
 
 export default userRouter;
