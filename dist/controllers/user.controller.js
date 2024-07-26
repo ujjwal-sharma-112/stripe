@@ -11,7 +11,6 @@ const services_1 = require("../services");
 const mongoose_1 = __importDefault(require("mongoose"));
 const validators_1 = require("../validators");
 const cloudinary_1 = require("cloudinary");
-const user_type_1 = require("../types/user.type");
 const stripe_1 = __importDefault(require("stripe"));
 class UserController {
     static async enable_2fa(req, res, next) {
@@ -192,14 +191,16 @@ class UserController {
     static async createCheckoutSession(req, res, next) {
         try {
             const { plan } = req.body;
-            const { role, userId } = req;
-            if (role !== user_type_1.Role.ADMIN) {
+            const { isVerified, userId } = req;
+            if (!isVerified) {
                 throw middlewares_1.ErrorHandler.unauthorized("You are not allowed to be here", "Not Authorized");
             }
             const amount = Number(plan.price) * 100;
             const stripe = new stripe_1.default(process.env.STRIPE_SECRET);
-            await stripe.checkout.sessions.create({
-                line_items: [{
+            await stripe.checkout.sessions
+                .create({
+                line_items: [
+                    {
                         price_data: {
                             currency: "inr",
                             product_data: {
@@ -208,33 +209,38 @@ class UserController {
                             unit_amount: amount,
                         },
                         quantity: 1,
-                    }],
+                    },
+                ],
                 metadata: {
                     plan: plan.name,
                     buyer_id: userId.toString(),
                 },
                 mode: "payment",
                 success_url: "http://localhost:5173/success",
-                cancel_url: "http://localhost:5173/cancel"
-            }).then(async (response) => {
-                await models_1.TransactionModel.create({
-                    stripeId: response.id,
-                    amount: response.amount_subtotal,
-                    plan: plan.name,
-                    credits: plan.credits,
-                    buyer: userId,
-                }).then(async () => {
-                    await models_1.UserModel.updateOne({
-                        _id: userId,
-                    }, {
-                        $inc: { creditBalance: plan.credits },
-                        planId: plan.id,
+                cancel_url: "http://localhost:5173/cancel",
+            })
+                .then(async (response) => {
+                if (response.status === "complete") {
+                    await models_1.TransactionModel.create({
+                        stripeId: response.id,
+                        amount: response.amount_subtotal,
+                        plan: plan.name,
+                        credits: plan.credits,
+                        buyer: userId,
+                    }).then(async () => {
+                        await models_1.UserModel.updateOne({
+                            _id: userId,
+                        }, {
+                            $inc: { creditBalance: plan.credits },
+                            planId: plan.id,
+                        });
+                        return res.status(200).json({
+                            id: response.id,
+                        });
                     });
-                    return res.status(200).json({
-                        id: response.id
-                    });
-                });
-            }).catch((err) => {
+                }
+            })
+                .catch((err) => {
                 throw err;
             });
         }
