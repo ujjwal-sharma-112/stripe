@@ -366,11 +366,11 @@ class UserController {
             amount: amount_total ? amount_total / 100 : 0,
             plan: metadata?.plan || "",
             credits: Number(metadata?.credits) || 0,
-            buyerId: metadata?.buyerId || "",
+            buyerId: metadata?.buyer_id || "",
           });
 
           await UserModel.updateOne(
-            { _id: metadata?.buyerId },
+            { _id: metadata?.buyer_id },
             {
               planId: metadata?.plan_id!,
               $inc: { creditBalance: Number(metadata?.credits) },

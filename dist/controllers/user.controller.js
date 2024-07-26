@@ -247,9 +247,9 @@ class UserController {
                         amount: amount_total ? amount_total / 100 : 0,
                         plan: (metadata === null || metadata === void 0 ? void 0 : metadata.plan) || "",
                         credits: Number(metadata === null || metadata === void 0 ? void 0 : metadata.credits) || 0,
-                        buyerId: (metadata === null || metadata === void 0 ? void 0 : metadata.buyerId) || "",
+                        buyerId: (metadata === null || metadata === void 0 ? void 0 : metadata.buyer_id) || "",
                     });
-                    await models_1.UserModel.updateOne({ _id: metadata === null || metadata === void 0 ? void 0 : metadata.buyerId }, {
+                    await models_1.UserModel.updateOne({ _id: metadata === null || metadata === void 0 ? void 0 : metadata.buyer_id }, {
                         planId: metadata === null || metadata === void 0 ? void 0 : metadata.plan_id,
                         $inc: { creditBalance: Number(metadata === null || metadata === void 0 ? void 0 : metadata.credits) },
                     });
