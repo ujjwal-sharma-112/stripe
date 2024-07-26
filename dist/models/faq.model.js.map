@@ -1,0 +1,1 @@
+{"version":3,"file":"faq.model.js","sourceRoot":"","sources":["../../src/models/faq.model.ts"],"names":[],"mappings":";;;;;AAAA,wDAAgC;AAEhC,MAAM,SAAS,GAAG,IAAI,kBAAQ,CAAC,MAAM,CAAC;IACpC,IAAI,EAAE,MAAM;IACZ,GAAG,EAAE,MAAM;CACZ,EAAE;IACD,UAAU,EAAE,IAAI;CACjB,CAAC,CAAC;AAEH,MAAM,QAAQ,GAAG,kBAAQ,CAAC,KAAK,CAAC,KAAK,EAAE,SAAS,CAAC,CAAC;AAElD,kBAAe,QAAQ,CAAC"}

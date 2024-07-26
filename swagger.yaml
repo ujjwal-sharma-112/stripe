@@ -1,0 +1,441 @@
+openapi: 3.0.0
+info:
+  title: Stripe API
+  description: API for user authentication and account management
+  version: 1.0.0
+servers:
+  - url: http://localhost:4000/api/v1
+paths:
+  /auth/sign-up:
+    post:
+      summary: Create a new user account
+      tags:
+        - Auth
+      requestBody:
+        description: User creation request data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                user_name:
+                  type: string
+                first_name:
+                  type: string
+                last_name:
+                  type: string
+                password:
+                  type: string
+                phone:
+                  type: number
+                dialing_code:
+                  type: number
+                address:
+                  type: object
+                  properties:
+                    city:
+                      type: string
+                    country:
+                      type: string
+                    state:
+                      type: string
+      responses:
+        '201':
+          description: User Created Successfully. Please verify before continue.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  result:
+                    type: object
+                    properties:
+                      email:
+                        type: string
+        '409':
+          description: Conflict error, user already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+  /auth/login:
+    post:
+      summary: User login
+      tags:
+        - Auth
+      requestBody:
+        description: Login request data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                username:
+                  type: string
+                phone:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: User Logged In
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  token:
+                    type: string
+                  userId:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized access
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+  /auth/verify-otp:
+    post:
+      summary: Verify OTP
+      tags:
+        - Auth
+      requestBody:
+        description: OTP verification request data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                otp:
+                  type: string
+      responses:
+        '200':
+          description: OTP Verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: User not found or already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized access, incorrect or expired OTP
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+  /auth/resend-otp:
+    post:
+      summary: Resend OTP
+      tags:
+        - Auth
+      requestBody:
+        description: Resend OTP request data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: OTP Sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '409':
+          description: Conflict error, user already verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '401':
+          description: Unauthorized access, user is blocked
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+  /auth/forgot-pass-mail:
+    post:
+      summary: Send password reset email
+      tags:
+        - Auth
+      requestBody:
+        description: Password reset email request data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+      responses:
+        '200':
+          description: Mail to reset your password has been sent.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+  /auth/update-forgot-password:
+    post:
+      summary: Update forgot password
+      tags:
+        - Auth
+      requestBody:
+        description: Update password request data
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Password updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
+        '406':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  statusCode:
+                    type: integer
+                  errorType:
+                    type: string
+                  message:
+                    type: string
