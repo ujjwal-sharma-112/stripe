@@ -7,11 +7,11 @@ import swaggerUi from "swagger-ui-express";
 import YAML from "yamljs";
 import cors from "cors";
 import dotenv from "dotenv";
+import { UserController } from "./controllers";
 
 async function main() {
+  dotenv.config();
 
-  dotenv.config()
-  
   // VARIABLES
   const PORT = process.env.PORT || 3030;
 
@@ -29,6 +29,9 @@ async function main() {
     services.AdminService.create();
     services.StaticService.createDefaultStaticData();
   });
+
+  // WEBHOOK
+  app.post("/webhook/stripe", UserController.paymentFullfilment);
 
   // Middlewares
   app.use(Express.json());

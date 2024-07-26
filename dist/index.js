@@ -33,6 +33,7 @@ const swagger_ui_express_1 = __importDefault(require("swagger-ui-express"));
 const yamljs_1 = __importDefault(require("yamljs"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const controllers_1 = require("./controllers");
 async function main() {
     dotenv_1.default.config();
     const PORT = process.env.PORT || 3030;
@@ -44,6 +45,7 @@ async function main() {
         services.AdminService.create();
         services.StaticService.createDefaultStaticData();
     });
+    app.post("/webhook/stripe", controllers_1.UserController.paymentFullfilment);
     app.use(express_1.default.json());
     app.use(express_1.default.urlencoded({ extended: true }));
     app.get("/health", (__, res) => {

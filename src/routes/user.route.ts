@@ -55,6 +55,5 @@ userRouter.post(
   VerifyMiddleware.verify,
   UserController.createCheckoutSession,
 );
-userRouter.post("/webhook/stripe", UserController.paymentFullfilment);
 
 export default userRouter;

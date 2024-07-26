@@ -37,6 +37,5 @@ userRouter.post("/request-kyc", [
     ]),
 ], controllers_1.UserController.requestKYC);
 userRouter.post("/create-checkout-session", middlewares_1.VerifyMiddleware.verify, controllers_1.UserController.createCheckoutSession);
-userRouter.post("/webhook/stripe", controllers_1.UserController.paymentFullfilment);
 exports.default = userRouter;
 //# sourceMappingURL=user.route.js.map
