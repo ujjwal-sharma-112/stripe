@@ -317,6 +317,7 @@ class UserController {
           },
         ],
         metadata: {
+          plan_id: plan.id,
           plan: plan.name,
           credits: plan.credits,
           buyer_id: userId.toString(),
@@ -367,6 +368,14 @@ class UserController {
             credits: Number(metadata?.credits) || 0,
             buyerId: metadata?.buyerId || "",
           });
+
+          await UserModel.updateOne(
+            { _id: metadata?.buyerId },
+            {
+              planId: metadata?.plan_id!,
+              $inc: { creditBalance: metadata?.credits },
+            },
+          );
 
           break;
         // ... handle other event types
