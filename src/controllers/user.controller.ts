@@ -289,56 +289,68 @@ class UserController {
   ) {
     try {
       const { plan } = req.body;
-      const { role, userId } = req;
-      
-      if (role !== Role.ADMIN) {
-        throw ErrorHandler.unauthorized("You are not allowed to be here", "Not Authorized")
+      const { isVerified, userId } = req;
+
+      if (!isVerified) {
+        throw ErrorHandler.unauthorized(
+          "You are not allowed to be here",
+          "Not Authorized",
+        );
       }
 
       const amount = Number(plan.price) * 100;
 
       const stripe = new Stripe(process.env.STRIPE_SECRET!);
 
-      await stripe.checkout.sessions.create({
-        line_items: [{
-          price_data: {
-            currency: "inr",
-            product_data: {
-              name: plan.name,
+      await stripe.checkout.sessions
+        .create({
+          line_items: [
+            {
+              price_data: {
+                currency: "inr",
+                product_data: {
+                  name: plan.name,
+                },
+                unit_amount: amount,
+              },
+              quantity: 1,
             },
-            unit_amount: amount,
+          ],
+          metadata: {
+            plan: plan.name,
+            buyer_id: userId.toString(),
           },
-          quantity: 1,
-        }],
-        metadata: {
-          plan: plan.name,
-          buyer_id: userId.toString(),
-        },
-        mode: "payment",
-        success_url: "http://localhost:3000/success",
-        cancel_url: "http://localhost:3000/cancel"
-      }).then(async (res) => {
-        await TransactionModel.create({
-          stripeId: res.id,
-          amount: res.amount_subtotal,
-          plan: plan.name,
-          credits: plan.credits,
-          buyer: userId,
-        }).then(async () => {
-          await UserModel.updateOne({
-            _id: userId,
-          }, {
-            $inc: {creditBalance: plan.credits},
-            planId: plan.id,
-          })
+          mode: "payment",
+          success_url: "http://localhost:5173/success",
+          cancel_url: "http://localhost:5173/cancel",
         })
-      }).catch((err) => {
-        throw err;
-      });
-
-      return res.status(200).json({
-        message: "Payment Successful"
-      })
+        .then(async (response) => {
+          if (response.status === "complete") {
+            await TransactionModel.create({
+              stripeId: response.id,
+              amount: response.amount_subtotal,
+              plan: plan.name,
+              credits: plan.credits,
+              buyer: userId,
+            }).then(async () => {
+              await UserModel.updateOne(
+                {
+                  _id: userId,
+                },
+                {
+                  $inc: { creditBalance: plan.credits },
+                  planId: plan.id,
+                },
+              );
+              return res.status(200).json({
+                id: response.id,
+              });
+            });
+          }
+        })
+        .catch((err) => {
+          throw err;
+        });
     } catch (err) {
       return next(err);
     }
