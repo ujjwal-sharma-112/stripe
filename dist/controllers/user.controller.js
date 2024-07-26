@@ -240,11 +240,11 @@ class UserController {
                 return;
             }
             switch (event.type) {
-                case "checkout.session.completed":
-                    const { id, metadata, amount_total } = event.data.object;
+                case "charge.updated":
+                    const { id, metadata, amount_captured } = event.data.object;
                     await models_1.TransactionModel.create({
                         stripeId: id,
-                        amount: amount_total ? amount_total / 100 : 0,
+                        amount: amount_captured ? amount_captured / 100 : 0,
                         plan: (metadata === null || metadata === void 0 ? void 0 : metadata.plan) || "",
                         credits: Number(metadata === null || metadata === void 0 ? void 0 : metadata.credits) || 0,
                         buyerId: (metadata === null || metadata === void 0 ? void 0 : metadata.buyerId) || "",
