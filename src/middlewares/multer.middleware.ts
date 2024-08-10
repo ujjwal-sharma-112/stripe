@@ -1,11 +1,11 @@
-import multer from "multer";
-import path from "path";
-import fs from "fs";
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const storage = multer.diskStorage({
   destination: function (req, _file, cb) {
     const userId = req.userId;
-    const userDir = path.join("documents/", userId.toString());
+    const userDir = path.join('documents/', userId.toString());
     fs.mkdirSync(userDir, { recursive: true });
     cb(null, userDir);
   },

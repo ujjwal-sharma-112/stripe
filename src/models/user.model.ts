@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import mongoose from 'mongoose';
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 export const userSchema = new mongoose.Schema(
   {
@@ -52,13 +52,13 @@ export const userSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["ACTIVE", "PENDING", "BLOCKED", "DELETED"],
-      default: "PENDING",
+      enum: ['ACTIVE', 'PENDING', 'BLOCKED', 'DELETED'],
+      default: 'PENDING',
     },
     role: {
       type: String,
-      enum: ["USER", "ADMIN"],
-      default: "USER",
+      enum: ['USER', 'ADMIN'],
+      default: 'USER',
     },
     qr: {
       type: String,
@@ -133,6 +133,6 @@ interface UserDocument extends mongoose.Document {
 const UserModel = mongoose.model<
   UserDocument,
   mongoose.AggregatePaginateModel<UserDocument>
->("users", userSchema);
+>('users', userSchema);
 
 export default UserModel;

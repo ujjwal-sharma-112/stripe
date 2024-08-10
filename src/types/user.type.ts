@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 export type User = {
   _id: mongoose.Types.ObjectId;
@@ -25,40 +25,40 @@ export type User = {
 
 export type UserCreateRequest = Omit<
   User,
-  | "isVerified"
-  | "status"
-  | "role"
-  | "qr"
-  | "createdAt"
-  | "updatedAt"
-  | "_id"
-  | "salt"
+  | 'isVerified'
+  | 'status'
+  | 'role'
+  | 'qr'
+  | 'createdAt'
+  | 'updatedAt'
+  | '_id'
+  | 'salt'
 >;
 export type UpdateUserRequest = Partial<
   Omit<
     User,
-    | "dialing_code"
-    | "department"
-    | "isVerified"
-    | "status"
-    | "role"
-    | "qr"
-    | "createdAt"
-    | "updatedAt"
-    | "password"
-    | "courses"
-    | "isApproved"
-    | "_id"
+    | 'dialing_code'
+    | 'department'
+    | 'isVerified'
+    | 'status'
+    | 'role'
+    | 'qr'
+    | 'createdAt'
+    | 'updatedAt'
+    | 'password'
+    | 'courses'
+    | 'isApproved'
+    | '_id'
   >
 >;
-export type TokenResponse = Pick<User, "_id" | "email">;
+export type TokenResponse = Pick<User, '_id' | 'email'>;
 export type LoginRequestDTO = {
   email: string;
   username: string;
   phone: number;
   password: string;
 };
-export type ChangeStatusRequest = Pick<User, "_id" | "status">;
+export type ChangeStatusRequest = Pick<User, '_id' | 'status'>;
 export type ChangePasswordRequest = {
   oldPassword: string;
   newPassword: string;
@@ -80,15 +80,15 @@ export type QueryOptions = {
 };
 
 export enum Role {
-  ADMIN = "ADMIN",
-  USER = "USER",
+  ADMIN = 'ADMIN',
+  USER = 'USER',
 }
 
 export enum Status {
-  ACTIVE = "ACTIVE",
-  PENDING = "PENDING",
-  BLOCKED = "BLOCKED",
-  DELETED = "DELETED",
+  ACTIVE = 'ACTIVE',
+  PENDING = 'PENDING',
+  BLOCKED = 'BLOCKED',
+  DELETED = 'DELETED',
 }
 
 export type KYCData = {

@@ -1,6 +1,6 @@
-import { NextFunction } from "express-serve-static-core";
-import nodemailer from "nodemailer";
-import { Twilio } from "twilio";
+import { NextFunction } from 'express-serve-static-core';
+import nodemailer from 'nodemailer';
+import { Twilio } from 'twilio';
 
 class MailService {
   public static async sendViaMail(
@@ -11,7 +11,7 @@ class MailService {
   ) {
     try {
       const transporter = nodemailer.createTransport({
-        service: "gmail",
+        service: 'gmail',
         auth: {
           user: process.env.EMAIL,
           pass: process.env.PASSWORD,

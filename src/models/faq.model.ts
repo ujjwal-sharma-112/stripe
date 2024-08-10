@@ -1,12 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
-const faqSchema = new mongoose.Schema({
-  ques: String,
-  sol: String,
-}, {
-  timestamps: true,
-});
+const faqSchema = new mongoose.Schema(
+  {
+    ques: String,
+    sol: String,
+  },
+  {
+    timestamps: true,
+  },
+);
 
-const FaqModel = mongoose.model("faq", faqSchema);
+const FaqModel = mongoose.model('faq', faqSchema);
 
 export default FaqModel;

@@ -1,5 +1,5 @@
-import mongoose from "mongoose";
-import mongooseAggregatePaginate from "mongoose-aggregate-paginate-v2";
+import mongoose from 'mongoose';
+import mongooseAggregatePaginate from 'mongoose-aggregate-paginate-v2';
 
 const kycSchema = new mongoose.Schema(
   {
@@ -31,8 +31,8 @@ const kycSchema = new mongoose.Schema(
     },
     kyc_status: {
       type: String,
-      enum: ["PENDING", "REJECTED", "APPROVED"],
-      default: "PENDING",
+      enum: ['PENDING', 'REJECTED', 'APPROVED'],
+      default: 'PENDING',
     },
   },
   { timestamps: true },
@@ -60,6 +60,6 @@ interface KYCDocument extends mongoose.Document {
 const KYCModel = mongoose.model<
   KYCDocument,
   mongoose.AggregatePaginateModel<KYCDocument>
->("kycs", kycSchema);
+>('kycs', kycSchema);
 
 export default KYCModel;

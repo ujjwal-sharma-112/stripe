@@ -1,9 +1,9 @@
-import joi from "joi";
+import joi from 'joi';
 import {
   ChangePasswordRequest,
   ChangeStatusRequest,
   UpdateUserRequest,
-} from "../types/user.type";
+} from '../types/user.type';
 
 interface Disable2faDTO {
   token: string;
@@ -34,7 +34,7 @@ class UserValidator {
   public static async changeStatus(req: ChangeStatusRequest) {
     const schema = joi.object<ChangeStatusRequest>({
       _id: joi.string().required(),
-      status: joi.string().valid("BLOCKED", "DELETED", "PENDING").required(),
+      status: joi.string().valid('BLOCKED', 'DELETED', 'PENDING').required(),
     });
 
     return schema.validate(req, { abortEarly: false });
@@ -42,7 +42,7 @@ class UserValidator {
 
   public static async changePassword(req: ChangePasswordRequest) {
     const schema = joi.object<ChangePasswordRequest>({
-      confirmPassword: joi.string().valid(joi.ref("newPassword")).required(),
+      confirmPassword: joi.string().valid(joi.ref('newPassword')).required(),
       oldPassword: joi.string().required(),
       newPassword: joi.string().required(),
     });

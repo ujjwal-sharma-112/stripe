@@ -1,15 +1,14 @@
-import { NextFunction, Request, Response } from "express-serve-static-core";
-import speakEasy from "speakeasy";
-import qrcode from "qrcode";
-import { KYCModel, UserModel, TransactionModel } from "../models";
-import { ErrorHandler } from "../middlewares";
-import { JWTService } from "../services";
-import mongoose from "mongoose";
-import { UserValidator } from "../validators";
-import { v2 as cloudinary } from "cloudinary";
-import { KYCData, Role } from "../types/user.type";
-import Stripe from "stripe";
-import { resolve } from "node:path/win32";
+import { NextFunction, Request, Response } from 'express-serve-static-core';
+import speakEasy from 'speakeasy';
+import qrcode from 'qrcode';
+import { KYCModel, TransactionModel, UserModel } from '../models';
+import { ErrorHandler } from '../middlewares';
+import { JWTService } from '../services';
+import mongoose from 'mongoose';
+import { UserValidator } from '../validators';
+import { v2 as cloudinary } from 'cloudinary';
+import { KYCData } from '../types/user.type';
+import Stripe from 'stripe';
 
 interface CloudinaryUploadResult {
   secure_url: string;
@@ -26,11 +25,11 @@ class UserController {
       const { userId, enabled_2fa } = req;
 
       if (!enabled_2fa) {
-        throw ErrorHandler.conflict("2FA Already enabled", "2FA Conflict");
+        throw ErrorHandler.conflict('2FA Already enabled', '2FA Conflict');
       }
 
       const temp_secret = speakEasy.generateSecret({
-        name: "Test 2fa",
+        name: 'Test 2fa',
       });
 
       const qr = await qrcode.toDataURL(temp_secret.otpauth_url!.toString());
@@ -41,7 +40,7 @@ class UserController {
       );
 
       return res.status(200).json({
-        message: "2fa enabled",
+        message: '2fa enabled',
         qr: qr,
       });
     } catch (err) {
@@ -63,13 +62,13 @@ class UserController {
       if (error) {
         throw ErrorHandler.notAcceptable(
           JSON.stringify(error.details),
-          "Not Acceptable",
+          'Not Acceptable',
         );
       }
 
       const verified = speakEasy.totp.verify({
         secret: perm_secret!.base32,
-        encoding: "base32",
+        encoding: 'base32',
         token,
       });
 
@@ -84,12 +83,12 @@ class UserController {
         );
 
         return res.status(200).json({
-          message: "2Fa has been disabled",
+          message: '2Fa has been disabled',
         });
       } else {
         throw ErrorHandler.unauthorized(
-          "Something went wrong while authenticating 2fa",
-          "Not Authorized",
+          'Something went wrong while authenticating 2fa',
+          'Not Authorized',
         );
       }
     } catch (err) {
@@ -110,7 +109,7 @@ class UserController {
       if (error) {
         throw ErrorHandler.notAcceptable(
           JSON.stringify(error.details),
-          "Not Acceptable",
+          'Not Acceptable',
         );
       }
 
@@ -118,15 +117,15 @@ class UserController {
 
       if (!isValidId) {
         throw ErrorHandler.notAcceptable(
-          "Please provide a valid user id",
-          "Not Acceptable",
+          'Please provide a valid user id',
+          'Not Acceptable',
         );
       }
 
       const user = await UserModel.findOne({ _id: userId });
 
       if (!user) {
-        throw ErrorHandler.notFound("User not Found with userId", "Not Found");
+        throw ErrorHandler.notFound('User not Found with userId', 'Not Found');
       }
 
       if (user.enabled_2fa) {
@@ -134,7 +133,7 @@ class UserController {
 
         const verified = speakEasy.totp.verify({
           secret,
-          encoding: "base32",
+          encoding: 'base32',
           token,
         });
 
@@ -142,13 +141,13 @@ class UserController {
           const jwtToken = JWTService.generate({ _id: userId });
 
           return res.status(200).json({
-            message: "User Verified with 2fa",
+            message: 'User Verified with 2fa',
             token: jwtToken,
           });
         } else {
           throw ErrorHandler.unauthorized(
-            "Something went wrong while verifying user",
-            "Not authorized",
+            'Something went wrong while verifying user',
+            'Not authorized',
           );
         }
       }
@@ -159,8 +158,8 @@ class UserController {
         user.temp_secret === null
       ) {
         throw ErrorHandler.unauthorized(
-          "Your 2fa is disabled",
-          "Not authorized",
+          'Your 2fa is disabled',
+          'Not authorized',
         );
       }
 
@@ -168,7 +167,7 @@ class UserController {
 
       const verified = speakEasy.totp.verify({
         secret,
-        encoding: "base32",
+        encoding: 'base32',
         token,
       });
 
@@ -185,13 +184,13 @@ class UserController {
         const jwtToken = JWTService.generate({ _id: userId });
 
         return res.status(200).json({
-          message: "User Verified with 2fa",
+          message: 'User Verified with 2fa',
           token: jwtToken,
         });
       } else {
         throw ErrorHandler.unauthorized(
-          "Something went wrong while authenticating 2fa",
-          "Not Authorized",
+          'Something went wrong while authenticating 2fa',
+          'Not Authorized',
         );
       }
     } catch (err) {
@@ -209,17 +208,17 @@ class UserController {
 
       const kycInfo = await KYCModel.findOne({ userId: req.userId });
 
-      if (kycInfo && kycInfo.kyc_status === "APPROVED") {
+      if (kycInfo && kycInfo.kyc_status === 'APPROVED') {
         throw ErrorHandler.notAcceptable(
-          "You have already applied for KYC or KYC Request has already been approved",
-          "Not Found",
+          'You have already applied for KYC or KYC Request has already been approved',
+          'Not Found',
         );
       }
 
-      if (kycInfo && kycInfo.kyc_status === "PENDING") {
+      if (kycInfo && kycInfo.kyc_status === 'PENDING') {
         throw ErrorHandler.notAcceptable(
-          "We already have your kyc request and will get back to you shortly",
-          "Not Found",
+          'We already have your kyc request and will get back to you shortly',
+          'Not Found',
         );
       }
 
@@ -253,20 +252,20 @@ class UserController {
       };
 
       uploadResults.forEach((uR) => {
-        switch (uR.original_filename.split("-")[0]) {
-          case "pan_card":
+        switch (uR.original_filename.split('-')[0]) {
+          case 'pan_card':
             kycData.pan_card = uR.secure_url || null;
             break;
-          case "adhaar_card":
+          case 'adhaar_card':
             kycData.adhaar_card = uR.secure_url || null;
             break;
-          case "passport":
+          case 'passport':
             kycData.passport = uR.secure_url || null;
             break;
-          case "drivers_id":
+          case 'drivers_id':
             kycData.drivers_id = uR.secure_url || null;
             break;
-          case "image":
+          case 'image':
             kycData.image = uR.secure_url || null;
             break;
         }
@@ -276,7 +275,7 @@ class UserController {
 
       res.status(201).json({
         message:
-          "Your KYC request has been recieved. We will get back to you shortly.",
+          'Your KYC request has been recieved. We will get back to you shortly.',
       });
     } catch (err) {
       return next(err);
@@ -294,8 +293,8 @@ class UserController {
 
       if (!isVerified) {
         throw ErrorHandler.unauthorized(
-          "You are not allowed to be here",
-          "Not Authorized",
+          'You are not allowed to be here',
+          'Not Authorized',
         );
       }
 
@@ -307,7 +306,7 @@ class UserController {
         line_items: [
           {
             price_data: {
-              currency: "inr",
+              currency: 'inr',
               product_data: {
                 name: plan.name,
               },
@@ -322,9 +321,9 @@ class UserController {
           credits: plan.credits,
           buyer_id: userId.toString(),
         },
-        mode: "payment",
-        success_url: "http://localhost:5173/success",
-        cancel_url: "http://localhost:5173/cancel",
+        mode: 'payment',
+        success_url: 'http://localhost:5173/success',
+        cancel_url: 'http://localhost:5173/cancel',
       });
 
       return res.status(200).json({
@@ -341,7 +340,7 @@ class UserController {
     next: NextFunction,
   ) {
     try {
-      const sig = req.headers["stripe-signature"]!;
+      const sig = req.headers['stripe-signature']!;
 
       let event: Stripe.Event;
 
@@ -358,15 +357,15 @@ class UserController {
 
       // Handle the event
       switch (event.type) {
-        case "checkout.session.completed":
+        case 'checkout.session.completed':
           const { id, metadata, amount_total } = event.data.object;
 
           await TransactionModel.create({
             stripeId: id,
             amount: amount_total ? amount_total / 100 : 0,
-            plan: metadata?.plan || "",
+            plan: metadata?.plan || '',
             credits: Number(metadata?.credits) || 0,
-            buyer: metadata?.buyer_id || "",
+            buyer: metadata?.buyer_id || '',
           });
 
           await UserModel.updateOne(
@@ -385,7 +384,7 @@ class UserController {
 
       // Return a 200 response to acknowledge receipt of the event
       res.status(200).json({
-        message: "Payment Successfull",
+        message: 'Payment Successfull',
       });
     } catch (err) {
       return next(err);

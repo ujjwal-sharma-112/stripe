@@ -1,11 +1,16 @@
-import {NextFunction, Request, Response} from "express-serve-static-core";
-import {ErrorHandler} from "../middlewares";
-import {UserModel} from "../models";
-import {LoginRequestDTO, Status, UserCreateRequest, VerifyOtp} from "../types/user.type";
-import {AuthValidator} from "../validators";
-import {JWTService, MailService} from "../services";
-import {HashHelper} from "../helpers";
-import QRCode from "qrcode";
+import { NextFunction, Request, Response } from 'express-serve-static-core';
+import { ErrorHandler } from '../middlewares';
+import { UserModel } from '../models';
+import {
+  LoginRequestDTO,
+  Status,
+  UserCreateRequest,
+  VerifyOtp,
+} from '../types/user.type';
+import { AuthValidator } from '../validators';
+import { JWTService, MailService } from '../services';
+import { HashHelper } from '../helpers';
+import QRCode from 'qrcode';
 
 class AuthController {
   public static async signUp(
@@ -32,8 +37,8 @@ class AuthController {
 
       if (error) {
         throw ErrorHandler.notAcceptable(
-            JSON.stringify(error.details),
-            error.name,
+          JSON.stringify(error.details),
+          error.name,
         );
       }
 
@@ -54,13 +59,13 @@ class AuthController {
 
           await MailService.sendViaMail(
             `We saw your account was deleted. If this is really you. You can reactivate you account by verifying the otp we just sent you. Your otp for verification is: ${otp}`,
-            "Otp for Verification",
+            'Otp for Verification',
             email,
             next,
           );
 
           return res.status(201).json({
-            message: "Your account is deleted. Please check your email",
+            message: 'Your account is deleted. Please check your email',
           });
         }
       } else if (!userExists) {
@@ -68,7 +73,7 @@ class AuthController {
 
         await MailService.sendViaMail(
           `Your otp for verification is: ${otp}`,
-          "Otp for Verification",
+          'Otp for Verification',
           email,
           next,
         );
@@ -101,28 +106,28 @@ class AuthController {
         };
 
         return res.status(201).json({
-          message: "User Created Successfully. Please verify before continue.",
+          message: 'User Created Successfully. Please verify before continue.',
           result,
         });
       } else {
         if (userExists.email === email) {
           throw ErrorHandler.conflict(
-              "User with provided Email already exist",
-              "User Conflict",
+            'User with provided Email already exist',
+            'User Conflict',
           );
         }
 
         if (userExists.phone === phone) {
           throw ErrorHandler.conflict(
-              "User with provided Phone already exist",
-              "User Conflict",
+            'User with provided Phone already exist',
+            'User Conflict',
           );
         }
 
         if (userExists.user_name === user_name) {
           throw ErrorHandler.conflict(
-              "User with provided user_name already exist",
-              "User Conflict",
+            'User with provided user_name already exist',
+            'User Conflict',
           );
         }
       }
@@ -152,28 +157,28 @@ class AuthController {
 
       if (error) {
         throw ErrorHandler.notAcceptable(
-            JSON.stringify(error.details),
-            "Not Acceptable",
+          JSON.stringify(error.details),
+          'Not Acceptable',
         );
       }
 
       const userExists = await UserModel.findOne(query);
 
       if (!userExists) {
-        throw ErrorHandler.notFound("User not Found", "Not Found");
+        throw ErrorHandler.notFound('User not Found', 'Not Found');
       }
 
       if (userExists.isVerified === false) {
         throw ErrorHandler.unauthorized(
-            "Please verify your account first.",
-            "Not Authorized",
+          'Please verify your account first.',
+          'Not Authorized',
         );
       }
 
       if (userExists.status === Status.BLOCKED) {
         throw ErrorHandler.unauthorized(
-            "You are blocked by admin",
-            "Not Authorized",
+          'You are blocked by admin',
+          'Not Authorized',
         );
       }
 
@@ -185,14 +190,14 @@ class AuthController {
 
       if (!isPassValid) {
         throw ErrorHandler.unauthorized(
-            "Password is not correct.",
-            "Not Authorized",
+          'Password is not correct.',
+          'Not Authorized',
         );
       }
 
       if (userExists.enabled_2fa) {
         return res.status(200).json({
-          message: "Please verify 2fa before continuing",
+          message: 'Please verify 2fa before continuing',
           userId: userExists._id,
         });
       } else {
@@ -201,7 +206,7 @@ class AuthController {
           email: userExists.email,
         });
         return res.status(200).json({
-          message: "User Logged In.",
+          message: 'User Logged In.',
           token: token,
         });
       }
@@ -222,8 +227,8 @@ class AuthController {
 
       if (error) {
         throw ErrorHandler.notAcceptable(
-            JSON.stringify(error.details),
-            "Not Acceptable",
+          JSON.stringify(error.details),
+          'Not Acceptable',
         );
       }
 
@@ -237,8 +242,8 @@ class AuthController {
 
       if (!userExists) {
         throw ErrorHandler.notFound(
-            "User not found or is already verified.",
-            "Not Found",
+          'User not found or is already verified.',
+          'Not Found',
         );
       }
 
@@ -249,17 +254,11 @@ class AuthController {
       const diffInMinutes = Math.floor(diff / 60000);
 
       if (diffInMinutes > 15) {
-        throw ErrorHandler.unauthorized(
-            "OTP is expired",
-            "Not Authorized",
-        );
+        throw ErrorHandler.unauthorized('OTP is expired', 'Not Authorized');
       }
 
       if (userExists.otp !== otp) {
-        throw ErrorHandler.unauthorized(
-            "OTP is incorrect",
-            "Not Authorized",
-        );
+        throw ErrorHandler.unauthorized('OTP is incorrect', 'Not Authorized');
       }
 
       await UserModel.updateOne(
@@ -267,7 +266,7 @@ class AuthController {
         { isVerified: true, status: Status.ACTIVE, otp: null, otpTime: null },
       );
 
-      return res.status(200).json({ message: "OTP Verified" });
+      return res.status(200).json({ message: 'OTP Verified' });
     } catch (error) {
       return next(error);
     }
@@ -283,8 +282,8 @@ class AuthController {
     try {
       if (email === undefined) {
         throw ErrorHandler.notAcceptable(
-            JSON.stringify("Email is required"),
-            "Not Acceptable",
+          JSON.stringify('Email is required'),
+          'Not Acceptable',
         );
       }
 
@@ -292,28 +291,25 @@ class AuthController {
 
       if (error) {
         throw ErrorHandler.notAcceptable(
-            JSON.stringify(error.details),
-            "Not Acceptable",
+          JSON.stringify(error.details),
+          'Not Acceptable',
         );
       }
 
       const userExists = await UserModel.findOne({ email: email });
 
       if (!userExists) {
-        throw ErrorHandler.notFound("User not found", "Not Found");
+        throw ErrorHandler.notFound('User not found', 'Not Found');
       }
 
       if (userExists.isVerified) {
-        throw ErrorHandler.conflict(
-            "User is already verified",
-            "Conflict",
-        );
+        throw ErrorHandler.conflict('User is already verified', 'Conflict');
       }
 
       if (userExists.status === Status.BLOCKED) {
         throw ErrorHandler.unauthorized(
-            "You are blocked by admin.",
-            "Conflict",
+          'You are blocked by admin.',
+          'Conflict',
         );
       }
 
@@ -321,14 +317,17 @@ class AuthController {
 
       await MailService.sendViaMail(
         `Your OTP is ${otp}`,
-        "OTP For Verification",
+        'OTP For Verification',
         email,
         next,
       );
 
-      await UserModel.findOneAndUpdate({email: email}, {otp: otp, otpTime: new Date()})
+      await UserModel.findOneAndUpdate(
+        { email: email },
+        { otp: otp, otpTime: new Date() },
+      );
 
-      return res.status(200).json({ message: "OTP Sent" });
+      return res.status(200).json({ message: 'OTP Sent' });
     } catch (error) {
       return next(error);
     }
@@ -344,8 +343,8 @@ class AuthController {
     try {
       if (!email) {
         throw ErrorHandler.notAcceptable(
-            "Email is required to send reset link.",
-            "Not Acceptable",
+          'Email is required to send reset link.',
+          'Not Acceptable',
         );
       }
 
@@ -354,7 +353,7 @@ class AuthController {
       });
 
       if (!user) {
-        throw ErrorHandler.notFound("User not found", "Not Found");
+        throw ErrorHandler.notFound('User not found', 'Not Found');
       }
 
       const token = JWTService.generate({ _id: user._id, email: user.email });
@@ -363,14 +362,14 @@ class AuthController {
 
       await MailService.sendViaMail(
         message,
-        "Link for Password Reset",
+        'Link for Password Reset',
         user.email,
         next,
       );
 
       return res
         .status(200)
-        .json({ message: "Mail to reset your password has been sent." });
+        .json({ message: 'Mail to reset your password has been sent.' });
     } catch (error) {
       return next(error);
     }
@@ -386,8 +385,8 @@ class AuthController {
     try {
       if (!body.password) {
         throw ErrorHandler.notAcceptable(
-            "Password is required to reset password.",
-            "Not Found",
+          'Password is required to reset password.',
+          'Not Found',
         );
       }
 
@@ -395,7 +394,7 @@ class AuthController {
 
       await UserModel.updateOne({ _id: userId }, { password: hashPassword });
 
-      return res.status(200).json({ message: "Password updated successfully" });
+      return res.status(200).json({ message: 'Password updated successfully' });
     } catch (error) {
       return next(error);
     }

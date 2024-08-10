@@ -2,8 +2,8 @@ import {
   LoginRequestDTO,
   UserCreateRequest,
   VerifyOtp,
-} from "../types/user.type";
-import joi from "joi";
+} from '../types/user.type';
+import joi from 'joi';
 
 class AuthValidator {
   public static async signUp(body: UserCreateRequest) {
@@ -31,12 +31,12 @@ class AuthValidator {
         email: joi.string(),
         username: joi.string(),
         phone: joi.number().max(9999999999).min(1000000000).messages({
-          "number.min": "Please provide atleast 10 digits",
-          "number.max": "Please provide only 10 digits",
+          'number.min': 'Please provide atleast 10 digits',
+          'number.max': 'Please provide only 10 digits',
         }),
         password: joi.string().required(),
       })
-      .or("email", "username", "phone");
+      .or('email', 'username', 'phone');
 
     return schema.validate(body, { abortEarly: false });
   }

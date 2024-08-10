@@ -31,11 +31,15 @@
     "@types/qrcode": "^1.5.5",
     "@types/speakeasy": "^2.0.10",
     "@types/swagger-ui-express": "^4.1.6",
-    "@types/yamljs": "^0.2.34"
+    "@types/yamljs": "^0.2.34",
+    "concurrently": "^8.2.2",
+    "prettier": "3.3.3",
+    "typescript": "^5.5.4"
   },
   "scripts": {
     "build": "tsc",
-    "serve": "tsc -w & nodemon --env-file=.env dist/index.js",
+    "serve": "concurrently \"tsc -w\" \"infisical run -- nodemon dist/index.js\"",
     "start": "node dist/index.js"
-  }
+  },
+  "packageManager": "yarn@1.22.21+sha1.1959a18351b811cdeedbd484a8f86c3cc3bbaf72"
 }

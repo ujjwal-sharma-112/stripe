@@ -1,13 +1,13 @@
-import Express from "express";
-import { NextFunction, Request, Response } from "express-serve-static-core";
-import { ErrorHandler } from "./middlewares";
-import * as routes from "./routes";
-import * as services from "./services";
-import swaggerUi from "swagger-ui-express";
-import YAML from "yamljs";
-import cors from "cors";
-import dotenv from "dotenv";
-import { UserController } from "./controllers";
+import Express from 'express';
+import { NextFunction, Request, Response } from 'express-serve-static-core';
+import { ErrorHandler } from './middlewares';
+import * as routes from './routes';
+import * as services from './services';
+import swaggerUi from 'swagger-ui-express';
+import YAML from 'yamljs';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { UserController } from './controllers';
 
 async function main() {
   dotenv.config();
@@ -20,7 +20,7 @@ async function main() {
 
   app.use(
     cors({
-      origin: "*",
+      origin: '*',
     }),
   );
 
@@ -30,10 +30,10 @@ async function main() {
     services.StaticService.createDefaultStaticData();
   });
 
-  // WEBHOOK
+  // STRIPE WEBHOOK
   app.post(
-    "/api/v1/user/webhook/stripe",
-    Express.raw({ type: "application/json" }),
+    '/api/v1/user/webhook/stripe',
+    Express.raw({ type: 'application/json' }),
     UserController.paymentFullfilment,
   );
 
@@ -41,14 +41,14 @@ async function main() {
   app.use(Express.json());
   app.use(Express.urlencoded({ extended: true }));
 
-  app.get("/health", (__, res) => {
-    res.send("Server Healthy");
+  app.get('/health', (__, res) => {
+    res.send('Server Healthy');
   });
 
   // Routes
-  app.use("/api/v1/auth", routes.AuthRoutes);
-  app.use("/api/v1/admin", routes.AdminRoutes);
-  app.use("/api/v1/user", routes.UserRoutes);
+  app.use('/api/v1/auth', routes.AuthRoutes);
+  app.use('/api/v1/admin', routes.AdminRoutes);
+  app.use('/api/v1/user', routes.UserRoutes);
 
   // Global ErrorHandler
   app.use(
@@ -64,7 +64,7 @@ async function main() {
         res.status(500).json({
           name: name,
           statusCode: 500,
-          errorType: "InternalServerError",
+          errorType: 'InternalServerError',
           message: error,
         });
       }
@@ -78,8 +78,8 @@ async function main() {
     },
   );
 
-  const swaggerDocument = YAML.load("swagger.yaml");
-  app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  const swaggerDocument = YAML.load('swagger.yaml');
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
   app.listen(PORT, () => {
     console.log(
@@ -89,5 +89,5 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.log("Something went horribly wrong.", err);
+  console.log('Something went horribly wrong.', err);
 });

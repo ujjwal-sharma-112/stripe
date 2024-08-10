@@ -1,10 +1,10 @@
-import { NextFunction, Request, Response } from "express-serve-static-core";
-import mongoose, { PaginateOptions, PipelineStage } from "mongoose";
-import { ParsedQs } from "qs";
-import { ErrorHandler } from "../middlewares";
-import { KYCModel, UserModel } from "../models";
-import { ChangeStatusRequest, QueryOptions, Role } from "../types/user.type";
-import { AdminValidator, UserValidator } from "../validators";
+import { NextFunction, Request, Response } from 'express-serve-static-core';
+import mongoose, { PaginateOptions, PipelineStage } from 'mongoose';
+import { ParsedQs } from 'qs';
+import { ErrorHandler } from '../middlewares';
+import { KYCModel, UserModel } from '../models';
+import { ChangeStatusRequest, QueryOptions, Role } from '../types/user.type';
+import { AdminValidator, UserValidator } from '../validators';
 
 interface IHandleKYC {
   userId: string;
@@ -22,8 +22,8 @@ class AdminController {
     try {
       if (req.role !== Role.ADMIN) {
         throw ErrorHandler.unauthorized(
-          "You are not allowed here.",
-          "Not Authorized",
+          'You are not allowed here.',
+          'Not Authorized',
         );
       }
 
@@ -32,7 +32,7 @@ class AdminController {
       if (error) {
         throw ErrorHandler.notAcceptable(
           JSON.stringify(error.details),
-          "Not Acceptable",
+          'Not Acceptable',
         );
       }
 
@@ -40,21 +40,21 @@ class AdminController {
 
       if (!isValidId) {
         throw ErrorHandler.notAcceptable(
-          "Id format not accepted.",
-          "Not Acceptable",
+          'Id format not accepted.',
+          'Not Acceptable',
         );
       }
 
       const userExists = await UserModel.findOne({ _id: req.body._id });
 
       if (!userExists) {
-        throw ErrorHandler.notFound("User not found", "Not Found");
+        throw ErrorHandler.notFound('User not found', 'Not Found');
       }
 
       if (userExists.role === Role.ADMIN) {
         throw ErrorHandler.conflict(
-          "Admin cannot update itself",
-          "User Conflict",
+          'Admin cannot update itself',
+          'User Conflict',
         );
       }
 
@@ -65,7 +65,7 @@ class AdminController {
       );
 
       return res.status(200).json({
-        message: "User Status Changed.",
+        message: 'User Status Changed.',
       });
     } catch (error) {
       return next(error);
@@ -80,8 +80,8 @@ class AdminController {
     try {
       if (req.role !== Role.ADMIN) {
         throw ErrorHandler.unauthorized(
-          "You are not allowed to be here",
-          "Not Authorized",
+          'You are not allowed to be here',
+          'Not Authorized',
         );
       }
 
@@ -90,7 +90,7 @@ class AdminController {
       if (error) {
         throw ErrorHandler.notAcceptable(
           JSON.stringify(error.details),
-          "Not Acceptable",
+          'Not Acceptable',
         );
       }
 
@@ -100,7 +100,7 @@ class AdminController {
       });
 
       if (!kycInfo) {
-        throw ErrorHandler.notFound("No Kyc Info found", "Not Found");
+        throw ErrorHandler.notFound('No Kyc Info found', 'Not Found');
       }
 
       await KYCModel.findOneAndUpdate(
@@ -109,7 +109,7 @@ class AdminController {
       );
 
       res.status(200).json({
-        message: "Kyc has been handled",
+        message: 'Kyc has been handled',
       });
     } catch (err) {
       return next(err);
@@ -134,15 +134,15 @@ class AdminController {
     try {
       if (req.role !== Role.ADMIN) {
         throw ErrorHandler.unauthorized(
-          "You are not allowed here!",
-          "Not Authorized",
+          'You are not allowed here!',
+          'Not Authorized',
         );
       }
 
       const {
         page,
         limit,
-        orderBy = "createdAt",
+        orderBy = 'createdAt',
         order = 1,
         email,
         firstName,
@@ -153,25 +153,25 @@ class AdminController {
       } = req.query;
 
       const options: PaginateOptions = {
-        page: parseInt(String(page) ?? "1", 10),
-        limit: parseInt(String(limit) ?? "10", 10),
+        page: parseInt(String(page) ?? '1', 10),
+        limit: parseInt(String(limit) ?? '10', 10),
         sort: { [orderBy]: parseInt(String(order)) ?? -1 },
       };
 
-      const firstNameRegex = firstName ? new RegExp(firstName, "i") : null;
-      const lastNameRegex = lastName ? new RegExp(lastName, "i") : null;
-      const emailRegex = email ? new RegExp(email, "i") : null;
+      const firstNameRegex = firstName ? new RegExp(firstName, 'i') : null;
+      const lastNameRegex = lastName ? new RegExp(lastName, 'i') : null;
+      const emailRegex = email ? new RegExp(email, 'i') : null;
       const phoneNumber = phone ? Number(phone) : null;
 
-      const matchCriteria: { $or?: any[]; "userInfo.createdAt"?: any } = {};
+      const matchCriteria: { $or?: any[]; 'userInfo.createdAt'?: any } = {};
 
       if (from || to) {
-        matchCriteria["userInfo.createdAt"] = {};
+        matchCriteria['userInfo.createdAt'] = {};
         if (from) {
-          matchCriteria["userInfo.createdAt"].$gte = new Date(from as string);
+          matchCriteria['userInfo.createdAt'].$gte = new Date(from as string);
         }
         if (to) {
-          matchCriteria["userInfo.createdAt"].$lte = new Date(to as string);
+          matchCriteria['userInfo.createdAt'].$lte = new Date(to as string);
         }
       }
 
@@ -184,45 +184,45 @@ class AdminController {
         matchCriteria.$or = [];
         if (firstNameRegex) {
           matchCriteria.$or.push({
-            "userInfo.first_name": { $regex: firstNameRegex },
+            'userInfo.first_name': { $regex: firstNameRegex },
           });
         }
         if (lastNameRegex) {
           matchCriteria.$or.push({
-            "userInfo.last_name": { $regex: lastNameRegex },
+            'userInfo.last_name': { $regex: lastNameRegex },
           });
         }
         if (emailRegex) {
-          matchCriteria.$or.push({ "userInfo.email": { $regex: emailRegex } });
+          matchCriteria.$or.push({ 'userInfo.email': { $regex: emailRegex } });
         }
         if (phoneNumber !== null) {
-          matchCriteria.$or.push({ "userInfo.phone": phoneNumber });
+          matchCriteria.$or.push({ 'userInfo.phone': phoneNumber });
         }
       }
 
       const pipeline: PipelineStage[] = [
         {
           $lookup: {
-            from: "users",
-            localField: "userId",
-            foreignField: "_id",
-            as: "userInfo",
+            from: 'users',
+            localField: 'userId',
+            foreignField: '_id',
+            as: 'userInfo',
           },
         },
         {
           $unwind: {
-            path: "$userInfo",
+            path: '$userInfo',
             preserveNullAndEmptyArrays: true,
           },
         },
         { $match: matchCriteria },
         {
           $project: {
-            "userInfo.qr": 0,
-            "userInfo.password": 0,
-            "userInfo.salt": 0,
-            "userInfo.otp": 0,
-            "userInfo.otpTime": 0,
+            'userInfo.qr': 0,
+            'userInfo.password': 0,
+            'userInfo.salt': 0,
+            'userInfo.otp': 0,
+            'userInfo.otpTime': 0,
           },
         },
       ];
@@ -232,11 +232,11 @@ class AdminController {
       const users = await KYCModel.aggregatePaginate(userAggregate, options);
 
       if (users.docs.length === 0) {
-        throw ErrorHandler.notFound("Students not found", "Not Found");
+        throw ErrorHandler.notFound('Students not found', 'Not Found');
       }
 
       return res.status(200).json({
-        message: "Users fetched successfully",
+        message: 'Users fetched successfully',
         users,
       });
     } catch (error) {
@@ -263,15 +263,15 @@ class AdminController {
     try {
       if (req.role !== Role.ADMIN) {
         throw ErrorHandler.unauthorized(
-          "You are not allowed here!",
-          "Not Authorized",
+          'You are not allowed here!',
+          'Not Authorized',
         );
       }
 
       const {
         page,
         limit,
-        orderBy = "createdAt",
+        orderBy = 'createdAt',
         order = 1,
         email,
         firstName,
@@ -281,19 +281,19 @@ class AdminController {
       } = req.query;
 
       const options: PaginateOptions = {
-        page: parseInt(String(page) ?? "1", 10),
-        limit: parseInt(String(limit) ?? "10", 10),
+        page: parseInt(String(page) ?? '1', 10),
+        limit: parseInt(String(limit) ?? '10', 10),
         sort: { [orderBy]: parseInt(String(order)) ?? -1 },
       };
 
-      const firstNameRegex = firstName ? new RegExp(firstName, "i") : null;
-      const lastNameRegex = lastName ? new RegExp(lastName, "i") : null;
-      const emailRegex = email ? new RegExp(email, "i") : null;
+      const firstNameRegex = firstName ? new RegExp(firstName, 'i') : null;
+      const lastNameRegex = lastName ? new RegExp(lastName, 'i') : null;
+      const emailRegex = email ? new RegExp(email, 'i') : null;
 
       const matchCriteria: {
         $or?: any[];
         role?: {};
-        "kycInfo.createdAt"?: any;
+        'kycInfo.createdAt'?: any;
       } = {
         role: { $ne: Role.ADMIN },
       };
@@ -312,12 +312,12 @@ class AdminController {
       }
 
       if (from || to) {
-        matchCriteria["kycInfo.createdAt"] = {};
+        matchCriteria['kycInfo.createdAt'] = {};
         if (from) {
-          matchCriteria["kycInfo.createdAt"].$gte = new Date(from);
+          matchCriteria['kycInfo.createdAt'].$gte = new Date(from);
         }
         if (to) {
-          matchCriteria["kycInfo.createdAt"].$lte = new Date(to);
+          matchCriteria['kycInfo.createdAt'].$lte = new Date(to);
         }
       }
 
@@ -325,20 +325,20 @@ class AdminController {
         { $match: matchCriteria },
         {
           $lookup: {
-            from: "kycs",
-            localField: "_id",
-            foreignField: "userId",
-            as: "kycInfo",
+            from: 'kycs',
+            localField: '_id',
+            foreignField: 'userId',
+            as: 'kycInfo',
           },
         },
         {
           $unwind: {
-            path: "$kycInfo",
+            path: '$kycInfo',
             preserveNullAndEmptyArrays: true,
           },
         },
         {
-          $match: { "kycInfo.kyc_status": "APPROVED" },
+          $match: { 'kycInfo.kyc_status': 'APPROVED' },
         },
         {
           $project: {
@@ -356,11 +356,11 @@ class AdminController {
       const users = await UserModel.aggregatePaginate(userAggregate, options);
 
       if (users.docs.length === 0) {
-        throw ErrorHandler.notFound("Students not found", "Not Found");
+        throw ErrorHandler.notFound('Students not found', 'Not Found');
       }
 
       return res.status(200).json({
-        message: "Users fetched successfully",
+        message: 'Users fetched successfully',
         users,
       });
     } catch (error) {
@@ -387,15 +387,15 @@ class AdminController {
     try {
       if (req.role !== Role.ADMIN) {
         throw ErrorHandler.unauthorized(
-          "You are not allowed here!",
-          "Not Authorized",
+          'You are not allowed here!',
+          'Not Authorized',
         );
       }
 
       const {
         page,
         limit,
-        orderBy = "createdAt",
+        orderBy = 'createdAt',
         order = 1,
         email,
         firstName,
@@ -405,14 +405,14 @@ class AdminController {
       } = req.query;
 
       const options: PaginateOptions = {
-        page: parseInt(String(page) ?? "1", 10),
-        limit: parseInt(String(limit) ?? "10", 10),
+        page: parseInt(String(page) ?? '1', 10),
+        limit: parseInt(String(limit) ?? '10', 10),
         sort: { [orderBy]: parseInt(String(order)) ?? -1 },
       };
 
-      const firstNameRegex = firstName ? new RegExp(firstName, "i") : null;
-      const lastNameRegex = lastName ? new RegExp(lastName, "i") : null;
-      const emailRegex = email ? new RegExp(email, "i") : null;
+      const firstNameRegex = firstName ? new RegExp(firstName, 'i') : null;
+      const lastNameRegex = lastName ? new RegExp(lastName, 'i') : null;
+      const emailRegex = email ? new RegExp(email, 'i') : null;
 
       const matchCriteria: {
         $or?: any[];
@@ -463,11 +463,11 @@ class AdminController {
       const users = await UserModel.aggregatePaginate(userAggregate, options);
 
       if (users.docs.length === 0) {
-        throw ErrorHandler.notFound("Students not found", "Not Found");
+        throw ErrorHandler.notFound('Students not found', 'Not Found');
       }
 
       return res.status(200).json({
-        message: "Users fetched successfully",
+        message: 'Users fetched successfully',
         users,
       });
     } catch (error) {
